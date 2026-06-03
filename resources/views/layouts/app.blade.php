@@ -68,6 +68,11 @@
                 Laporan
             </a>
 
+			<a href="{{ route('users.index') }}"
+			   class="flex items-center w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('users.*') ? 'bg-white shadow-sm text-[#2D2A26]' : 'text-[#5C5954] hover:bg-[#EAE8E3]' }}">
+				Manajemen Admin
+			</a>
+
         </nav>
 
         {{-- Logout --}}

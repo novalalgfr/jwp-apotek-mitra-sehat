@@ -8,6 +8,7 @@ use App\Http\Controllers\ObatController;
 use App\Http\Controllers\ObatMasukController;
 use App\Http\Controllers\ObatKeluarController;
 use App\Http\Controllers\LaporanController;
+use App\Http\Controllers\UserController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -27,4 +28,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
     Route::get('/laporan/export-excel', [LaporanController::class, 'exportExcel'])->name('laporan.export-excel');
     Route::get('/laporan/export-pdf', [LaporanController::class, 'exportPdf'])->name('laporan.export-pdf');
+
+	Route::resource('users', UserController::class)->except(['show']);
 });
