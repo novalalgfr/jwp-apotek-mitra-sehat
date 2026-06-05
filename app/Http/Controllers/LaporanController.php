@@ -17,45 +17,13 @@ class LaporanController extends Controller
         $dari   = $request->dari;
         $sampai = $request->sampai;
 
-        $queryMasuk = ObatMasuk::with('obat.kategori')
-            ->when($dari, fn($q) => $q->whereDate('tanggal', '>=', $dari))
-            ->when($sampai, fn($q) => $q->whereDate('tanggal', '<=', $sampai));
+        $laporan = $this->getLaporanData($dari, $sampai);
 
-        $queryKeluar = ObatKeluar::with('obat.kategori')
-            ->when($dari, fn($q) => $q->whereDate('tanggal', '>=', $dari))
-            ->when($sampai, fn($q) => $q->whereDate('tanggal', '<=', $sampai));
-
-        $masuk = $queryMasuk->get()->map(fn($item) => [
-            'tanggal'       => $item->tanggal,
-            'nama_obat'     => $item->obat->nama_obat ?? '-',
-            'kategori'      => $item->obat->kategori->nama_kategori ?? '-',
-            'tipe'          => 'masuk',
-            'jumlah'        => $item->jumlah,
-            'keterangan'    => $item->keterangan ?? '-',
-        ]);
-
-        $keluar = $queryKeluar->get()->map(fn($item) => [
-            'tanggal'       => $item->tanggal,
-            'nama_obat'     => $item->obat->nama_obat ?? '-',
-            'kategori'      => $item->obat->kategori->nama_kategori ?? '-',
-            'tipe'          => 'keluar',
-            'jumlah'        => $item->jumlah,
-            'keterangan'    => $item->keterangan ?? '-',
-        ]);
-
-        $laporan = $masuk->concat($keluar)
-                         ->sortBy('tanggal')
-                         ->values();
-
-        $totalMasuk  = $masuk->sum('jumlah');
-        $totalKeluar = $keluar->sum('jumlah');
+        $totalMasuk  = $laporan->where('tipe', 'masuk')->sum('jumlah');
+        $totalKeluar = $laporan->where('tipe', 'keluar')->sum('jumlah');
 
         return view('laporan.index', compact(
-            'laporan',
-            'dari',
-            'sampai',
-            'totalMasuk',
-            'totalKeluar'
+            'laporan', 'dari', 'sampai', 'totalMasuk', 'totalKeluar'
         ));
     }
 
@@ -87,7 +55,7 @@ class LaporanController extends Controller
             'keterangan'    => $item->keterangan ?? '-',
         ]);
 
-        return $masuk->concat($keluar)->sortBy('tanggal')->values();
+        return $masuk->concat($keluar)->sortByDesc('tanggal')->values();
     }
 
     public function exportExcel(Request $request)
