@@ -12,6 +12,12 @@
             <p class="text-sm font-medium text-[#8F8C87] mb-1">Nama Obat</p>
             <p class="text-xl font-serif text-[#2D2A26]">{{ $obat->nama_obat }}</p>
         </div>
+
+		@if($obat->gambar)
+			<div class="mb-6">
+				<img src="{{ asset('storage/' . $obat->gambar) }}" alt="{{ $obat->nama_obat }}" class="w-full h-48 object-cover rounded-xl border border-[#E6E4DD]/60">
+			</div>
+		@endif
         
         <div class="grid grid-cols-2 gap-6 border-b border-[#E6E4DD]/60 pb-5">
             <div>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Obat;
 use App\Models\KategoriObat;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ObatController extends Controller
 {
@@ -24,29 +25,27 @@ class ObatController extends Controller
     {
         $request->validate([
             'kategori_id' => 'required|exists:kategori_obat,id',
+            'gambar'      => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'nama_obat'   => 'required|string|max:150',
             'satuan'      => 'required|string|max:50',
             'stok'        => 'required|integer|min:0',
-        ], [
-            'kategori_id.required' => 'Kategori wajib dipilih.',
-            'kategori_id.exists'   => 'Kategori tidak valid.',
-            'nama_obat.required'   => 'Nama obat wajib diisi.',
-            'satuan.required'      => 'Satuan wajib diisi.',
-            'stok.min'             => 'Stok tidak boleh negatif.',
         ]);
 
-        $status = $request->stok > 0 ? 'tersedia' : 'tidak tersedia';
+        $gambarPath = null;
+        if ($request->hasFile('gambar')) {
+            $gambarPath = $request->file('gambar')->store('obat_images', 'public');
+        }
 
         Obat::create([
             'kategori_id' => $request->kategori_id,
+            'gambar'      => $gambarPath,
             'nama_obat'   => $request->nama_obat,
             'satuan'      => $request->satuan,
             'stok'        => $request->stok,
-            'status'      => $status,
+            'status'      => $request->stok > 0 ? 'tersedia' : 'tidak tersedia',
         ]);
 
-        return redirect()->route('obat.index')
-                         ->with('success', 'Obat berhasil ditambahkan.');
+        return redirect()->route('obat.index')->with('success', 'Obat berhasil ditambahkan.');
     }
 
     public function show(Obat $obat)
@@ -65,39 +64,43 @@ class ObatController extends Controller
     {
         $request->validate([
             'kategori_id' => 'required|exists:kategori_obat,id',
+            'gambar'      => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'nama_obat'   => 'required|string|max:150',
             'satuan'      => 'required|string|max:50',
             'stok'        => 'required|integer|min:0',
-        ], [
-            'kategori_id.required' => 'Kategori wajib dipilih.',
-            'stok.min'             => 'Stok tidak boleh negatif.',
         ]);
 
-        $status = $request->stok > 0 ? 'tersedia' : 'tidak tersedia';
-
-        $obat->update([
+        $data = [
             'kategori_id' => $request->kategori_id,
             'nama_obat'   => $request->nama_obat,
             'satuan'      => $request->satuan,
             'stok'        => $request->stok,
-            'status'      => $status,
-        ]);
+            'status'      => $request->stok > 0 ? 'tersedia' : 'tidak tersedia',
+        ];
 
-        return redirect()->route('obat.index')
-                         ->with('success', 'Obat berhasil diperbarui.');
+        if ($request->hasFile('gambar')) {
+            if ($obat->gambar) {
+                Storage::disk('public')->delete($obat->gambar);
+            }
+            $data['gambar'] = $request->file('gambar')->store('obat_images', 'public');
+        }
+
+        $obat->update($data);
+
+        return redirect()->route('obat.index')->with('success', 'Obat berhasil diperbarui.');
     }
 
     public function destroy(Obat $obat)
     {
-        // Cek apakah ada transaksi terkait
         if ($obat->obatMasuk()->count() > 0 || $obat->obatKeluar()->count() > 0) {
-            return redirect()->route('obat.index')
-                             ->with('error', 'Obat tidak dapat dihapus karena memiliki riwayat transaksi.');
+            return redirect()->route('obat.index')->with('error', 'Obat tidak dapat dihapus karena memiliki riwayat transaksi.');
+        }
+
+        if ($obat->gambar) {
+            Storage::disk('public')->delete($obat->gambar);
         }
 
         $obat->delete();
-
-        return redirect()->route('obat.index')
-                         ->with('success', 'Obat berhasil dihapus.');
+        return redirect()->route('obat.index')->with('success', 'Obat berhasil dihapus.');
     }
 }
