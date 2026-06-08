@@ -17,20 +17,30 @@ class UserController extends Controller
 
     public function create()
     {
+        if (Auth::user()->role !== 'superadmin') {
+            return redirect()->route('users.index')->with('error', 'Akses Ditolak. Hanya Superadmin yang dapat menambah admin baru.');
+        }
+
         return view('users.create');
     }
 
     public function store(Request $request)
     {
+        if (Auth::user()->role !== 'superadmin') {
+            return redirect()->route('users.index')->with('error', 'Akses Ditolak.');
+        }
+
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name'     => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users',
+            'role'     => 'required|in:superadmin,admin',
             'password' => 'required|string|min:6',
         ]);
 
         User::create([
-            'name' => $request->name,
+            'name'     => $request->name,
             'username' => $request->username,
+            'role'     => $request->role,
             'password' => Hash::make($request->password),
         ]);
 
@@ -39,20 +49,30 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
+        if (Auth::user()->role !== 'superadmin') {
+            return redirect()->route('users.index')->with('error', 'Akses Ditolak. Hanya Superadmin yang dapat mengedit data.');
+        }
+
         return view('users.edit', compact('user'));
     }
 
     public function update(Request $request, User $user)
     {
+        if (Auth::user()->role !== 'superadmin') {
+            return redirect()->route('users.index')->with('error', 'Akses Ditolak.');
+        }
+
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name'     => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users,username,' . $user->id,
+            'role'     => 'required|in:superadmin,admin',
             'password' => 'nullable|string|min:6',
         ]);
 
         $data = [
-            'name' => $request->name,
+            'name'     => $request->name,
             'username' => $request->username,
+            'role'     => $request->role,
         ];
 
         if ($request->filled('password')) {
@@ -66,6 +86,10 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
+        if (Auth::user()->role !== 'superadmin') {
+            return redirect()->route('users.index')->with('error', 'Akses Ditolak. Hanya Superadmin yang dapat menghapus data.');
+        }
+
         if (Auth::id() === $user->id) {
             return back()->with('error', 'Tindakan ditolak. Anda tidak dapat menghapus akun yang sedang Anda gunakan.');
         }

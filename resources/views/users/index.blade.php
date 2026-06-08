@@ -8,10 +8,13 @@
 
     <div class="flex justify-between items-center mb-8">
         <p class="text-sm text-[#73706A]">Kelola akses dan kredensial admin sistem.</p>
-        <a href="{{ route('users.create') }}"
-           class="bg-[#D97757] hover:bg-[#C6694C] text-white text-sm font-medium px-5 py-2.5 rounded-xl transition-colors shadow-sm">
-            Tambah Admin
-        </a>
+        
+        @if(Auth::user()->role === 'superadmin')
+            <a href="{{ route('users.create') }}"
+               class="bg-[#D97757] hover:bg-[#C6694C] text-white text-sm font-medium px-5 py-2.5 rounded-xl transition-colors shadow-sm">
+                Tambah Pengguna
+            </a>
+        @endif
     </div>
 
     @if($users->isEmpty())
@@ -27,7 +30,10 @@
                             <th class="px-5 py-4 font-medium text-[#73706A] w-10">No</th>
                             <th class="px-5 py-4 font-medium text-[#73706A]">Nama Lengkap</th>
                             <th class="px-5 py-4 font-medium text-[#73706A]">Username</th>
-                            <th class="px-5 py-4 font-medium text-[#73706A] text-right">Aksi</th>
+                            <th class="px-5 py-4 font-medium text-[#73706A]">Role</th>
+                            @if(Auth::user()->role === 'superadmin')
+                                <th class="px-5 py-4 font-medium text-[#73706A] text-right">Aksi</th>
+                            @endif
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-[#E6E4DD]">
@@ -41,21 +47,31 @@
                                 @endif
                             </td>
                             <td class="px-5 py-4 text-[#5C5954]">{{ $user->username }}</td>
-                            <td class="px-5 py-4 flex justify-end gap-4">
-                                <a href="{{ route('users.edit', $user) }}"
-                                   class="text-sm font-medium text-[#73706A] hover:text-[#D97757] transition-colors">
-                                    Edit
-                                </a>
-                                @if(Auth::id() !== $user->id)
-                                    <form method="POST" action="{{ route('users.destroy', $user) }}"
-                                          onsubmit="return confirm('Yakin menghapus akses admin ini?')" class="inline">
-                                        @csrf @method('DELETE')
-                                        <button type="submit" class="text-sm font-medium text-[#73706A] hover:text-[#B3412F] transition-colors">
-                                            Hapus
-                                        </button>
-                                    </form>
+                            <td class="px-5 py-4">
+                                @if($user->role === 'superadmin')
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold bg-[#2D2A26] text-white tracking-wider uppercase">Superadmin</span>
+                                @else
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold bg-[#E6E4DD] text-[#5C5954] tracking-wider uppercase">Admin</span>
                                 @endif
                             </td>
+                            
+                            @if(Auth::user()->role === 'superadmin')
+                                <td class="px-5 py-4 flex justify-end gap-4">
+                                    <a href="{{ route('users.edit', $user) }}"
+                                       class="text-sm font-medium text-[#73706A] hover:text-[#D97757] transition-colors">
+                                        Edit
+                                    </a>
+                                    @if(Auth::id() !== $user->id)
+                                        <form method="POST" action="{{ route('users.destroy', $user) }}"
+                                              onsubmit="return confirm('Yakin menghapus akses ini?')" class="inline">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" class="text-sm font-medium text-[#73706A] hover:text-[#B3412F] transition-colors">
+                                                Hapus
+                                            </button>
+                                        </form>
+                                    @endif
+                                </td>
+                            @endif
                         </tr>
                         @endforeach
                     </tbody>

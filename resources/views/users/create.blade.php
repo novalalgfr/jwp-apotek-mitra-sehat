@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Tambah Admin')
-@section('header', 'Tambah Admin')
+@section('title', 'Tambah Pengguna')
+@section('header', 'Tambah Pengguna')
 
 @section('content')
 <div class="bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.02)] border border-[#E6E4DD]/50 p-8 max-w-xl">
@@ -25,6 +25,18 @@
                    class="w-full bg-[#F3F2EE] border border-transparent rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-[#D6D3CD] focus:outline-none focus:ring-4 focus:ring-[#F3F2EE] transition-all"
                    placeholder="Masukkan username unik">
             @error('username')
+                <p class="text-[#B3412F] text-xs mt-1 font-medium">{{ $message }}</p>
+            @enderror
+        </div>
+
+        <div class="space-y-1.5">
+            <label class="block text-sm font-medium text-[#5C5954]">Role Akses <span class="text-[#B3412F]">*</span></label>
+            <select name="role"
+                    class="w-full bg-[#F3F2EE] border border-transparent rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-[#D6D3CD] focus:outline-none focus:ring-4 focus:ring-[#F3F2EE] transition-all">
+                <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Admin (Standar)</option>
+                <option value="superadmin" {{ old('role') == 'superadmin' ? 'selected' : '' }}>Superadmin (Akses Penuh)</option>
+            </select>
+            @error('role')
                 <p class="text-[#B3412F] text-xs mt-1 font-medium">{{ $message }}</p>
             @enderror
         </div>
